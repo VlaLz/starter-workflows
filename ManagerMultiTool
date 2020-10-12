@@ -1,0 +1,357 @@
+from tkinter import *
+from tkinter import ttk
+from tkinter import messagebox as mb
+from tkinter import filedialog as fd
+
+
+# Раздел: Параметры основного окна
+root = Tk()
+root.geometry('200x225+200+100')
+root.title("ManagerMultiTool")
+root['bg'] = 'black'
+root.resizable(False, False)
+
+# Раздел: "Функции приложения ManagerMultiTool"
+
+#Функции сохранения/открытия файлов
+
+def open_file():
+    file_name = fd.askopenfilename()
+    f = open(file_name)
+    s = f.read()
+    f.close()
+
+
+def save_file():
+    file_name = fd.asksaveasfilename(filetypes=(("TXT files", "*.txt"),
+                                                ("HTML files", "*.html;*.htm"),
+                                                ("All files", "*.*")))
+
+
+# Функции Меню
+# 1) Функция "Графики"
+def image_diagram():
+    window_diageram = Toplevel()
+    window_diageram.geometry('200x200')
+    diagram_square = Canvas(window_diageram, width=200, height=200, bg='white')
+    diagram_square.pack()
+# 2) Функция "Калькулятор"
+
+def calculator(event):
+    calculator_window = Toplevel()
+    calculator_window.title("Калькулятор")
+    calculator_window.resizable(False, False)
+    calculator_window.geometry('248x298')
+    calculator_window['bg'] = 'black'
+# Меню калькулятора
+    menu_cal = Menu(calculator_window)
+    menu_file_cal = Menu(menu_cal, tearoff=0,bd =5)
+    menu_story_cal = Menu(menu_cal,tearoff=0,bd =5)
+    menu_file_cal.add_command(label='Новый')
+    menu_file_cal.add_separator()
+    menu_file_cal.add_command(label='Открыть', command = open_file)
+    menu_file_cal.add_separator()
+    menu_file_cal.add_command(label='Сохранить', command = save_file)
+    menu_file_cal.add_separator()
+    menu_file_cal.add_command(label='Сохранить как')
+    menu_cal.add_cascade(label='Файл', menu=menu_file_cal)
+
+    menu_story_cal.add_command(label = 'История операций')
+    menu_cal.add_cascade(label='История', menu=menu_story_cal)
+
+    calculator_window.config(menu=menu_cal)
+    # Основные параметры калькулятора
+
+    calculator_window_entry = Entry(calculator_window,bg='black',fg ='white',bd = 10, relief = 'sunken' )
+
+    calculator_window_entry.place(x=0, y=0, width=250, height=50)
+    calculator_window_entry.focus_set()
+
+    cal_bott_num = ('1', '2', '3','4', '5', '6','7', '8', '9','0')
+    cal_bott_func = ('=','DEL','C','/','(',')','x2','*','-','+','√','+/-','НДС','x!','.')
+
+    def input_some(event, some, Entry):
+
+        if some == 'DEL':
+            Entry.delete(0,END)
+
+        elif some == 'C':
+             Entry.delete(0)
+        elif some == 'x!':
+           num = int(Entry.get())
+           factorial = 1
+           while num >0:
+               factorial *= num
+               num = num-1
+           Entry.delete(0, END)
+           Entry.insert(END, factorial)
+        elif some == '+/-':
+            num = float(Entry.get())
+            num = num*(-1)
+            Entry.delete(0, END)
+            Entry.insert(END, num)
+        elif some == 'x2':
+            Entry.insert(END, '**2')
+        elif some == 'НДС':
+            nds = ((float(Entry.get()))/120)*20
+            Entry.delete(0, END)
+            Entry.insert(END, nds)
+        elif some == '√':
+            Entry.insert(END, '**.5')
+        elif some == '=' :
+            formul_n = Entry.get()
+
+            try:
+                result = eval(formul_n)
+                Entry.delete(0,END)
+                Entry.insert(0, result)
+            except ZeroDivisionError:
+                mb.showerror("Ошибка!", "Деление на ноль!")
+            except:
+                mb.showerror("Ошибка!", "Некоректный ввод!")
+
+        else:
+            Entry.insert(END,some)
+
+# Размещение кнопок калькулятора
+    cal_num_x = 0
+    cal_num_y = 50
+    cal_func_x = 100
+    cal_func_y = 50
+    cal_bt_widht = 50
+    cal_bt_height = 50
+    for bt in cal_bott_num:
+        num_bt = bt
+
+        Button(calculator_window, bg = 'grey75',  text=num_bt, bd = 5,relief = 'raised',
+               command = lambda s='<Button-1>',
+                f=num_bt,
+                h=calculator_window_entry:input_some(s,f,h) ).place(x=cal_num_x,
+                                                                    y=cal_num_y,
+                                                                    width=cal_bt_widht,
+                                                                    height=cal_bt_height)
+        cal_num_x = cal_num_x + cal_bt_widht
+        if cal_num_x == 100:
+            cal_num_x = 0
+            cal_num_y = cal_num_y + cal_bt_height
+    for fn in cal_bott_func:
+        fun_bt = fn
+
+        Button(calculator_window, bg = 'grey64', text=fun_bt, bd=5, relief = 'raised',
+               command = lambda s='<Button-1>',
+               f=fun_bt,
+               h=calculator_window_entry:input_some(s,f,h)).place(x=cal_func_x,
+                                                                  y=cal_func_y,
+                                                                  width=cal_bt_widht,
+                                                                  height=cal_bt_height)
+        cal_func_x = cal_func_x + cal_bt_widht
+        if cal_func_x == 250:
+            cal_func_x = 100
+            cal_func_y = cal_func_y + cal_bt_height
+# 3) Функция референция - список поставок и интерактивная карта
+
+def reference(event):
+
+
+    reference_window = Toplevel()
+    reference_window.title('Референция')
+    image_map = PhotoImage(file='map_russia2.png')
+    image_city = PhotoImage(file = "round.png")
+
+    def open_map_refernce():
+        map_window = Toplevel()
+
+
+
+        map_window.title('Референция')
+        map_window_sq = Label(map_window,image = image_map).place(x=0,y=0)
+
+
+        def city(event): # Функция для установки меток на карте
+            global x_city,y_city
+            x_city = event.x
+            y_city = event.y
+            Button(map_window,image = image_city,bd=0).place(x=x_city, y=y_city)
+
+        map_window.bind("<Button-3>", city)
+
+    reference_map_bt = Button(reference_window, text='Карта', command=open_map_refernce)
+    reference_map_bt.pack()
+# Функции основных вкладок
+
+def button_selection (str):
+    if str == 'СОЗДАТЬ\nТКП':
+        tkp_func()
+    elif str == 'E-MAIL':
+        e_mail_func()
+    elif str == 'ДОГОВОР':
+        deal_func()
+    elif str == 'ПЛАНЫ':
+        plan_func()
+    else:
+        mb.showerror("Ошибка!", "Функции нет")
+
+    # Функции вкладки "Коммерция"
+# 1) Функция создания защищенного ТКП
+def tkp_func():
+    tkp_blanc = Toplevel()
+    tkp_blanc.geometry("630x700")
+    tkp_blanc.title('Генерация защищённого ТКП')
+    tkp_blanc_scroll = Scrollbar(tkp_blanc, relief='raise')
+    tkp_blanc_scroll.pack(side=RIGHT, fill=Y)
+    width_param_text_x = 300
+    heigh_param_text_y = 100
+    width_label_text_x = 200
+    heigh_label_text_y = 50
+    x_text = 200
+    y_text = 10
+    tkp_label_list = ('Заголовок', 'Введение',
+                      'Описание', 'Характеристики', 'Стоимость', 'Подпись')
+    for tx in tkp_label_list:
+        text_l = tx
+        Label(tkp_blanc, text=text_l).place(x=x_text, y=y_text + 10)
+
+        y_text = y_text + heigh_param_text_y
+        if 200> y_text > 100:
+            Entry(tkp_blanc,width = 50, bd = 5, relief = 'sunken').place(x= width_label_text_x,y=(y_text-50))
+
+
+def e_mail_func():
+    e_mail = Toplevel()
+def deal_func():
+    deal = Toplevel()
+def plan_func():
+    plan = Toplevel()
+
+
+# Параметры Меню
+menu= Menu(root)
+menu_file = Menu(menu, tearoff=0)
+menu_tools = Menu(menu, tearoff=0)
+menu_param = Menu(menu, tearoff=0)
+menu_add_by_right_button = Menu(menu,tearoff=0)
+
+menu_file.add_command(label='Новый')
+menu_file.add_separator()
+menu_file.add_command(label='Открыть', command = open_file)
+menu_file.add_separator()
+menu_file.add_command(label='Сохранить',command = save_file)
+menu_file.add_separator()
+menu_file.add_command(label='Сохранить как')
+menu.add_cascade(label='Файл', menu=menu_file)
+
+menu_tools.add_command(label='Графики', command=image_diagram)
+menu_tools.add_separator()
+menu_tools.add_command(label='Калькулятор',command = lambda s = '<Button-1>':calculator(s))
+menu_tools.add_separator()
+menu_tools.add_command(label='Курс ЦБ')
+menu_tools.add_separator()
+menu_tools.add_command(label='Референция',command = lambda s = '<Button-1>':reference(s))
+menu.add_cascade(label='Инструменты',menu=menu_tools)
+
+menu_param.add_command(label='Параметры')
+menu_param.add_separator()
+menu_param.add_command(label='Справка')
+menu.add_cascade(label='Опции',menu=menu_param)
+
+
+
+
+# Всплывающее окно
+
+menu_add_by_right_button.add_command(label='Изменить')
+def popup(event):
+    global x, y
+    x = event.x
+    y = event.y
+    menu_add_by_right_button.post(event.x_root, event.y_root)
+
+root.bind("<Button-3>", popup)
+
+root.config(menu=menu)
+
+
+
+# Параметры вкладок
+tab_control = ttk.Notebook(root)
+tab1 = ttk.Frame(tab_control)
+tab2 = ttk.Frame(tab_control)
+tab3 = ttk.Frame(tab_control)
+tab_control.add(tab1, text='Коммерция')
+tab_control.add(tab2, text='Бухгалтерия')
+tab_control.add(tab3,text='База')
+tab_control.pack(expand=1, fill='both')
+
+# Кнопки и их параметры
+param_width_button = 100
+param_height_button = 100
+tab1_num_x = 0
+tab1_num_y = 2
+
+
+# 1) Кнопки вкладки "Коммерция"
+tab1_fun_list = ('СОЗДАТЬ\nТКП', 'E-MAIL','ДОГОВОР','ПЛАНЫ')
+param_of_geometry_tab1_x = param_width_button*len(tab1_fun_list)
+#param_of_geometry_y = param_height_button*len(tab1_fun_list)
+for fn in tab1_fun_list:
+    fun_bt = fn
+    Button(tab1, bg='grey75', text=fun_bt, bd = 5,relief = 'raised',
+           command =lambda func = fun_bt:  button_selection(func)).place(x=tab1_num_x,
+                                                  y=tab1_num_y,
+                                                  width=param_width_button,
+                                                  height=param_height_button)
+
+    tab1_num_x = tab1_num_x + param_width_button
+    if tab1_num_x == param_of_geometry_tab1_x/2:
+        tab1_num_x = 0
+        tab1_num_y = tab1_num_y + param_height_button
+
+
+# 2) Кнопки вкладки "Бухгалтерия"
+tab2_num_x = 0
+tab2_num_y = 2
+tab2_fun_list = ('СЧЁТ','ТОРГ-12','СЧЁТ\nФАКТУРА','ТТН')
+param_of_geometry_tab2_x = param_width_button*len(tab2_fun_list)
+#param_of_geometry_y = param_height_button*len(tab2_fun_list)
+for fn2 in tab2_fun_list:
+       fun_bt2 = fn2
+       Button(tab2, bg='grey75', text=fun_bt2,bd = 5,relief = 'raised').place(x=tab2_num_x,
+                                                  y=tab2_num_y,
+                                                  width=param_width_button,
+                                                  height=param_height_button)
+
+       tab2_num_x = tab2_num_x + param_width_button
+       if tab2_num_x == param_of_geometry_tab2_x/2:
+           tab2_num_x = 0
+           tab2_num_y = tab2_num_y + param_height_button
+
+
+
+
+
+# 3) Кнопки вкладки "База"
+tab3_num_x = 0
+tab3_num_y = 2
+tab3_fun_list = ('ОТКРЫТЬ\nБАЗУ','СОБРАТЬ\nБАЗУ','РАССЫЛКА','КАЛЕНДАРЬ\nСОБЫТИЙ')
+param_of_geometry_tab3_x = param_width_button*len(tab3_fun_list)
+for fn3 in tab3_fun_list:
+       fun_bt3 = fn3
+       Button(tab3, bg='grey75', text=fun_bt3,bd = 5,relief = 'raised').place(x=tab3_num_x,
+                                                  y=tab3_num_y,
+                                                  width=param_width_button,
+                                                  height=param_height_button)
+
+       tab3_num_x = tab3_num_x + param_width_button
+       if tab3_num_x == param_of_geometry_tab3_x/2:
+           tab3_num_x = 0
+           tab3_num_y = tab3_num_y + param_height_button
+
+
+# Горячие клавиши - hot_key(hk)
+
+root.bind('<Control-KeyPress-1>',calculator) # Вызов калькулятора на Ctrl 1
+
+root.bind('<Control-KeyPress-2>',reference) # Вызов референции на Ctrl 2
+
+root.mainloop()
+
